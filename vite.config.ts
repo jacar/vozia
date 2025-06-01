@@ -2,45 +2,22 @@ import { defineConfig } from 'vite';
 import { resolve } from 'path';
 
 // https://vitejs.dev/config/
-export default defineConfig(({ mode }) => {
-  // Load env file based on mode (development, production)
-  // Vite automatically loads .env files.
-  // For Vercel, environment variables are set in the Vercel dashboard.
+export default defineConfig(({ mode, command }) => {
+  // Log the API_KEY as seen by Vite during the build process
+  // This log will appear in Vercel's build logs
+  console.log(`[vite.config.js] Build command: ${command}, Mode: ${mode}`);
+  const apiKeyFromEnv = process.env.API_KEY;
+  console.log(`[vite.config.js] API_KEY from build environment: "${apiKeyFromEnv}"`);
+
+  if (command === 'build' && !apiKeyFromEnv) {
+    console.warn(
+      '[vite.config.js] WARNING: API_KEY is not defined or empty in the build environment!'
+    );
+    // You could throw an error here to fail the build if the API key is absolutely mandatory
+    // throw new Error("API_KEY is not defined for production build. Please set it in Vercel environment variables.");
+  }
 
   return {
-    // If your index.html is not in the root, adjust the root option.
-    // For example, if it's in a 'src' folder:
-    // root: 'src', 
-    
     build: {
       // Output directory for the build (default is 'dist')
-      outDir: '../dist', // Adjusted to be relative to project root if vite.config.js is in root.
-                         // If your index.html is in the root, and vite.config.js is in the root,
-                         // then outDir: 'dist' is usually correct.
-                         // Let's assume index.html is in the root and this config is too.
-      outDir: 'dist',
-      
-      rollupOptions: {
-        input: {
-          // Entry point of your application
-          main: resolve(__dirname, 'index.html') 
-        }
-      },
-      // Minify and other production optimizations are enabled by default for 'vite build'
-    },
-    
-    // This is crucial for making environment variables available in your client-side code
-    // as process.env.YOUR_VAR. Vercel will provide API_KEY during its build process.
-    define: {
-      'process.env.API_KEY': JSON.stringify(process.env.API_KEY),
-      // If you have other environment variables you need to expose:
-      // 'process.env.ANOTHER_VAR': JSON.stringify(process.env.ANOTHER_VAR),
-    },
-    
-    server: {
-      // Development server options
-      port: 3000, // Optional: specify dev server port
-      open: true    // Optional: automatically open in browser
-    }
-  };
-});
+      outDir: '
